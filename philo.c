@@ -2,6 +2,7 @@
 #include <bits/pthreadtypes.h>
 #include <pthread.h>
 #include <sys/time.h>
+#include <unistd.h>
 
 int	quit(int type)
 {
@@ -21,39 +22,69 @@ long now_ms(t_philo *info)
 	long			diff;
 
 	gettimeofday(&now, NULL);
-	diff = now.tv_usec - info->tv->tv_usec;
+	diff = (now.tv_sec - info->tv->tv_sec) * 1000 + (now.tv_usec - info->tv->tv_usec) / 1000;
 	return (diff);
 }
 
-void	start_simulation(t_philo *info)
+void take_fork(t_philo *info)
+{
+	pthread_mutex_lock(info->mutex);
+	printf("%ld\t%d has taken a fork!\n", now_ms(info), info->n);
+	pthread_mutex_unlock(info->mutex);
+}
+
+void think(t_philo *info)
+{
+	pthread_mutex_lock(info->mutex);
+	printf("%ld\t%d is thinking!\n", now_ms(info), info->n);
+	pthread_mutex_unlock(info->mutex);
+}
+
+void eat(t_philo *info)
+{
+	pthread_mutex_lock(info->mutex);
+	printf("%ld\t%d is eating!\n", now_ms(info), info->n);
+	pthread_mutex_unlock(info->mutex);
+	usleep(info->time_to_eat * 1000);
+}
+
+void nap(t_philo *info)
+{
+	pthread_mutex_lock(info->mutex);
+	printf("%ld\t%d is sleeping!\n", now_ms(info), info->n);
+	pthread_mutex_unlock(info->mutex);
+	usleep(info->time_to_sleep * 1000);
+}
+
+void	start_simulation_leftist(t_philo *info)
 {
 	while (1)
 	{
-		pthread_mutex_lock(info->mutex);
-			printf("%ld\t%d is thinking!\n", now_ms(info), info->n);
-			usleep(500000);
-		pthread_mutex_unlock(info->mutex);
 		pthread_mutex_lock(&(info->fork));
-			pthread_mutex_lock(info->mutex);
-				printf("%ld\t%d has taken a fork!\n", now_ms(info), info->n);
-				usleep(500000);
-				pthread_mutex_unlock(info->mutex);
+			take_fork(info);
 			pthread_mutex_lock(info->next_fork);
-				pthread_mutex_lock(info->mutex);
-					printf("%ld\t%d has taken a fork!\n", now_ms(info), info->n);
-					usleep(500000);
-					pthread_mutex_unlock(info->mutex);
-				pthread_mutex_lock(info->mutex);
-					printf("%ld\t%d is eating!\n", now_ms(info), info->n);
-					usleep(500000);
-					pthread_mutex_unlock(info->mutex);
-				usleep(500000);
-				pthread_mutex_lock(info->mutex);
-					printf("%ld\t%d is sleeping!\n", now_ms(info), info->n);
-					usleep(500000);
-					pthread_mutex_unlock(info->mutex);
+				take_fork(info);
+				eat(info);
+			pthread_mutex_unlock(&(info->fork));
+		pthread_mutex_unlock(info->next_fork);
+		nap(info);
+		think(info);
+	}
+}
+
+void	start_simulation_rightist(t_philo *info)
+{
+	while (1)
+	{
+		pthread_mutex_lock(info->next_fork);
+			take_fork(info);
+				pthread_mutex_lock(&(info->fork));
+				take_fork(info);
+				eat(info);
 			pthread_mutex_unlock(info->next_fork);
 		pthread_mutex_unlock(&(info->fork));
+		nap(info);
+		think(info);
 	}
 }
 
@@ -64,20 +95,19 @@ void	*thread_init(void *info_ptr)
 	info = (t_philo *)info_ptr;
 
 	pthread_mutex_lock(info->mutex);
-	printf("%d\t%d has spawned!\n", 0, info->n);
+	//printf("%ld\t%d has spawned!\n", now_ms(info), info->n);
 	pthread_mutex_unlock(info->mutex);
 
-	while (!info->hasStarted)
-		usleep(500);
-	usleep(500000);
-	start_simulation(info);
+	if (info->n%2)
+		start_simulation_leftist(info);
+	else
+		start_simulation_rightist(info);
 	return (NULL);
 }
 
 int	main(int ac, char **av)
 {
 	int				i;
-	int				started;
 	pthread_t		*threddy;
 	t_philo			*infos;
 	pthread_mutex_t	mutex;
@@ -85,7 +115,6 @@ int	main(int ac, char **av)
 	struct timeval	tv;
 
 	i = 0;
-	started = 0;
 	if (ac != 5 && ac != 6)
 		return (quit(0));
 	threads = ft_atoi(av[1]);
@@ -98,13 +127,16 @@ int	main(int ac, char **av)
 	threddy = malloc(sizeof(pthread_t) * threads);
 	infos = malloc(sizeof(t_philo) * threads);
 	gettimeofday(&tv, NULL);
+	pthread_mutex_lock(&mutex);
 	while (i < threads)
 	{
 		infos[i].mutex = &mutex;
-		infos[i].hasStarted = &started;
-		infos[i].n = i;
+		infos[i].n = i + 1;
 		infos[i].tv = &tv;
 		infos[i].max_n = threads;
+		infos[i].time_to_die = ft_atoi(av[2]);
+		infos[i].time_to_eat = ft_atoi(av[3]);
+		infos[i].time_to_sleep = ft_atoi(av[4]);
 		pthread_mutex_init(&(infos[i].fork), NULL);
 		infos[i].next_fork = &(infos[(i+1)%threads].fork);
 		i++;
@@ -115,7 +147,8 @@ int	main(int ac, char **av)
 		pthread_create(&(threddy[i]), NULL, &thread_init, &(infos[i]));
 		i++;
 	}
-	started = 1;
+	sleep(1);
+	pthread_mutex_unlock(&mutex);
 	i = 0;
 	while (i < threads)
 	{

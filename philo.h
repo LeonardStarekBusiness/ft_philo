@@ -13,11 +13,18 @@ typedef struct s_philo
 	pthread_t		thread;
 	int				n;
 	int				max_n;
-	int				*hasStarted;
+
 	struct timeval	*tv;
+	useconds_t		time_to_die;
+	useconds_t		time_to_eat;
+	useconds_t		time_to_sleep;
+	
 	pthread_mutex_t	*mutex;
 	pthread_mutex_t fork;
 	pthread_mutex_t *next_fork;
+
+	struct timeval	*last_supper;
+	char			*impending_doom;
 }					t_philo;
 
 #endif // PHILO_H
