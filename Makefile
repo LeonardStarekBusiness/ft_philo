@@ -4,7 +4,7 @@ CFLAGGEN = -Wall -Wextra -Werror -g
 
 CC = cc
 
-QUELLE_DATEIEN = ft_atoi.c philo.c
+QUELLE_DATEIEN = ft_atoi.c actions.c philo.c
 
 OBJEKT_DATEIEN = $(QUELLE_DATEIEN:.c=.o)
 

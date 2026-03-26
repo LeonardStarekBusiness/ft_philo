@@ -6,8 +6,6 @@
 # include <sys/time.h>
 # include <unistd.h>
 
-int					ft_atoi(const char *str);
-
 typedef struct s_table
 {
 	pthread_t		thread;
@@ -15,11 +13,19 @@ typedef struct s_table
 	int				n_of_philos;
 }					t_table;
 
+typedef struct s_state
+{
+	int		i;
+	int		have_eaten;
+	int		n_must_eat;
+	int		n_philos_exist;
+} t_state;
+
 typedef struct s_philo
 {
 	pthread_t		thread;
-	short				n;
-	short				max_n;
+	short			n;
+	short			max_n;
 
 	struct timeval	*tv;
 	useconds_t		time_to_die;
@@ -38,6 +44,21 @@ typedef struct s_philo
 	t_table			*table;
 }					t_philo;
 
+typedef struct s_info
+{
+	pthread_mutex_t	mutex;
+	int				i;
+	struct timeval	tv;
+	int				threads;
+	int				ac;
+}					t_info;
 
+int					ft_atoi(const char *str);
+
+long				now_ms(t_philo *info);
+void				take_fork(t_philo *info);
+void				think(t_philo *info);
+void				eat(t_philo *info);
+void				nap(t_philo *info);
 
 #endif // PHILO_H
