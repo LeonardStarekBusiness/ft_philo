@@ -15,68 +15,77 @@ int	quit(int type)
 	return (-1);
 }
 
-void	announce(const char *msg, t_philo info)
+long now_ms(t_philo *info)
 {
-	pthread_mutex_lock(info.mutex);
-	printf(msg, 0, info.n);
-	pthread_mutex_unlock(info.mutex);
+	struct timeval	now;
+	long			diff;
+
+	gettimeofday(&now, NULL);
+	diff = now.tv_usec - info->tv->tv_usec;
+	return (diff);
 }
 
-void	take_fork(const t_philo info)
+void	start_simulation(t_philo *info)
 {
-	announce("%d\t%d has taken a fork!\n", info);
-	return ;
-}
-
-void	eat(const t_philo info)
-{
-	announce("%d\t%d is eating!\n", info);
-	usleep(500000);
-	return ;
-}
-
-void	start_simulation(void *info_ptr)
-{
-	t_philo	info;
-
-	info = *(t_philo *)info_ptr;
 	while (1)
 	{
-		announce("%d\t%d is thinking!\n", info);
-		pthread_mutex_lock(&info.fork);
-			take_fork(info);
-			pthread_mutex_lock(info.next_fork);
-				take_fork(info);
-				eat(info);
-			pthread_mutex_unlock(&info.fork);
-		pthread_mutex_unlock(info.next_fork);		
-		announce("%d\t%d is sleeping!\n", info);
+		pthread_mutex_lock(info->mutex);
+			printf("%ld\t%d is thinking!\n", now_ms(info), info->n);
+			usleep(500000);
+		pthread_mutex_unlock(info->mutex);
+		pthread_mutex_lock(&(info->fork));
+			pthread_mutex_lock(info->mutex);
+				printf("%ld\t%d has taken a fork!\n", now_ms(info), info->n);
+				usleep(500000);
+				pthread_mutex_unlock(info->mutex);
+			pthread_mutex_lock(info->next_fork);
+				pthread_mutex_lock(info->mutex);
+					printf("%ld\t%d has taken a fork!\n", now_ms(info), info->n);
+					usleep(500000);
+					pthread_mutex_unlock(info->mutex);
+				pthread_mutex_lock(info->mutex);
+					printf("%ld\t%d is eating!\n", now_ms(info), info->n);
+					usleep(500000);
+					pthread_mutex_unlock(info->mutex);
+				usleep(500000);
+				pthread_mutex_lock(info->mutex);
+					printf("%ld\t%d is sleeping!\n", now_ms(info), info->n);
+					usleep(500000);
+					pthread_mutex_unlock(info->mutex);
+			pthread_mutex_unlock(info->next_fork);
+		pthread_mutex_unlock(&(info->fork));
 	}
 }
 
 void	*thread_init(void *info_ptr)
 {
-	t_philo	info;
+	t_philo	*info;
 
-	info = *(t_philo *)info_ptr;
+	info = (t_philo *)info_ptr;
 
-	pthread_mutex_lock(info.start);
-	usleep(50);
-	pthread_mutex_unlock(info.start);
-	start_simulation(info_ptr);
+	pthread_mutex_lock(info->mutex);
+	printf("%d\t%d has spawned!\n", 0, info->n);
+	pthread_mutex_unlock(info->mutex);
+
+	while (!info->hasStarted)
+		usleep(500);
+	usleep(500000);
+	start_simulation(info);
 	return (NULL);
 }
 
 int	main(int ac, char **av)
 {
 	int				i;
+	int				started;
 	pthread_t		*threddy;
 	t_philo			*infos;
 	pthread_mutex_t	mutex;
-	pthread_mutex_t	start;
 	int				threads;
+	struct timeval	tv;
 
 	i = 0;
+	started = 0;
 	if (ac != 5 && ac != 6)
 		return (quit(0));
 	threads = ft_atoi(av[1]);
@@ -86,28 +95,27 @@ int	main(int ac, char **av)
 	if (ac == 6 && ft_atoi(av[5]) < 1)
 		return (quit(1));
 	pthread_mutex_init(&mutex, NULL);
-	pthread_mutex_init(&start, NULL);
 	threddy = malloc(sizeof(pthread_t) * threads);
 	infos = malloc(sizeof(t_philo) * threads);
+	gettimeofday(&tv, NULL);
 	while (i < threads)
 	{
 		infos[i].mutex = &mutex;
+		infos[i].hasStarted = &started;
 		infos[i].n = i;
-		infos[i].start = &start;
+		infos[i].tv = &tv;
 		infos[i].max_n = threads;
 		pthread_mutex_init(&(infos[i].fork), NULL);
 		infos[i].next_fork = &(infos[(i+1)%threads].fork);
 		i++;
 	}
 	i = 0;
-	pthread_mutex_lock(&start);
 	while (i < threads)
 	{
 		pthread_create(&(threddy[i]), NULL, &thread_init, &(infos[i]));
 		i++;
 	}
-	usleep(500);
-	pthread_mutex_unlock(&start);
+	started = 1;
 	i = 0;
 	while (i < threads)
 	{
