@@ -15,11 +15,11 @@ typedef struct s_table
 
 typedef struct s_state
 {
-	int		i;
-	int		have_eaten;
-	int		n_must_eat;
-	int		n_philos_exist;
-} t_state;
+	int				i;
+	int				have_eaten;
+	int				n_must_eat;
+	int				n_philos_exist;
+}					t_state;
 
 typedef struct s_philo
 {
@@ -60,5 +60,9 @@ void				take_fork(t_philo *info);
 void				think(t_philo *info);
 void				eat(t_philo *info);
 void				nap(t_philo *info);
+
+void				start_simulation_leftist(t_philo *info);
+void				start_simulation_rightist(t_philo *info);
+void				*thread_init(void *info_ptr);
 
 #endif // PHILO_H
