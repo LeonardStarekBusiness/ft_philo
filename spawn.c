@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   spawn.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lstarek <lstarek@student.42vienna.com>     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/03/29 14:37:25 by lstarek           #+#    #+#             */
+/*   Updated: 2026/03/29 14:37:27 by lstarek          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "philo.h"
 
 void	start_simulation_leftist(t_philo *info)
@@ -8,10 +20,16 @@ void	start_simulation_leftist(t_philo *info)
 		take_fork(info);
 		pthread_mutex_lock(info->next_fork);
 		take_fork(info);
-		eat(info);
+		if (eat(info))
+		{
+			pthread_mutex_unlock(&(info->fork));
+			pthread_mutex_unlock(info->next_fork);
+			return ;
+		}
 		pthread_mutex_unlock(&(info->fork));
 		pthread_mutex_unlock(info->next_fork);
-		nap(info);
+		if (nap(info))
+			return ;
 		think(info);
 		pthread_mutex_lock(info->mutex);
 		if (info->impending_doom)
@@ -29,10 +47,16 @@ void	start_simulation_rightist(t_philo *info)
 		take_fork(info);
 		pthread_mutex_lock(&(info->fork));
 		take_fork(info);
-		eat(info);
+		if (eat(info))
+		{
+			pthread_mutex_unlock(info->next_fork);
+			pthread_mutex_unlock(&(info->fork));
+			return ;
+		}
 		pthread_mutex_unlock(info->next_fork);
 		pthread_mutex_unlock(&(info->fork));
-		nap(info);
+		if (nap(info))
+			return ;
 		think(info);
 		pthread_mutex_lock(info->mutex);
 		if (info->impending_doom)

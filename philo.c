@@ -1,14 +1,26 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   philo.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lstarek <lstarek@student.42vienna.com>     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/03/29 14:37:13 by lstarek           #+#    #+#             */
+/*   Updated: 2026/03/29 14:37:17 by lstarek          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "philo.h"
 
 int	quit(int type)
 {
 	if (type == 1)
 	{
-		write(1, "Usage: ./philo number_of_philosophers ", 39);
-		write(1, "time_to_die time_to_eat time_to_sleep\n", 39);
+		printf("Usage: ./philo number_of_philosophers ");
+		printf("time_to_die time_to_eat time_to_sleep\n");
 	}
 	else if (type == 2)
-		write(1, "Args cannot be 0\n", 18);
+		printf("Args cannot be 0\n");
 	return (type);
 }
 
@@ -23,7 +35,8 @@ void	*table_activities(void *info_ptr)
 	state.n_must_eat = info[0].times_must_eat;
 	state.n_philos_exist = info[0].max_n;
 	pthread_mutex_unlock(info->mutex);
-	while (state.have_eaten != state.n_philos_exist)
+	state.philo_died = 0;
+	while (state.have_eaten != state.n_philos_exist && !state.philo_died)
 	{
 		state.have_eaten = 0;
 		state.i = 0;
@@ -34,13 +47,25 @@ void	*table_activities(void *info_ptr)
 				&& (info[state.i].times_eaten >= state.n_must_eat))
 				state.have_eaten += 1;
 			pthread_mutex_unlock(info->mutex);
+			if (is_dead(info+state.i))
+			{
+				state.philo_died = 1;
+			}
 			state.i++;
 		}
 		usleep(5000);
 	}
 	pthread_mutex_lock(info->mutex);
 	while (state.i > 0)
-		info[--state.i].impending_doom = 1;
+	{
+		state.i--;
+		if (state.philo_died)
+			printf("==%ld==\t%d died\n", now_ms(info), info[state.i].n);
+		info[state.i].impending_doom = 1;
+		info[state.i].game_won = 1;
+	}
+	if (!state.philo_died)
+		printf("All philos have eated\n");
 	pthread_mutex_unlock(info->mutex);
 	return (NULL);
 }
@@ -56,6 +81,7 @@ void	initialise(t_philo *philo, char **av, t_info *info)
 	philo->time_to_die = ft_atoi(av[2]);
 	philo->time_to_eat = ft_atoi(av[3]);
 	philo->time_to_sleep = ft_atoi(av[4]);
+	gettimeofday(&(philo->last_supper), NULL);
 	if (info->ac == 6)
 		philo->times_must_eat = ft_atoi(av[5]);
 	else

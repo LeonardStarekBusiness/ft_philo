@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   philo.h                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lstarek <lstarek@student.42vienna.com>     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/03/29 14:36:53 by lstarek           #+#    #+#             */
+/*   Updated: 2026/03/29 14:36:55 by lstarek          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef PHILO_H
 # define PHILO_H
 # include <pthread.h>
@@ -19,6 +31,7 @@ typedef struct s_state
 	int				have_eaten;
 	int				n_must_eat;
 	int				n_philos_exist;
+	int				philo_died;
 }					t_state;
 
 typedef struct s_philo
@@ -28,6 +41,7 @@ typedef struct s_philo
 	short			max_n;
 
 	struct timeval	*tv;
+	struct timeval	last_supper;
 	useconds_t		time_to_die;
 	useconds_t		time_to_eat;
 	useconds_t		time_to_sleep;
@@ -36,10 +50,10 @@ typedef struct s_philo
 	pthread_mutex_t	fork;
 	pthread_mutex_t	*next_fork;
 
-	struct timeval	*last_supper;
 	short			times_must_eat;
 	short			times_eaten;
 	char			impending_doom;
+	char			game_won;
 
 	t_table			*table;
 }					t_philo;
@@ -56,13 +70,17 @@ typedef struct s_info
 int					ft_atoi(const char *str);
 
 long				now_ms(t_philo *info);
+int					is_dead(t_philo *info);
+
 void				take_fork(t_philo *info);
 void				think(t_philo *info);
-void				eat(t_philo *info);
-void				nap(t_philo *info);
+int					eat(t_philo *info);
+int					nap(t_philo *info);
 
 void				start_simulation_leftist(t_philo *info);
 void				start_simulation_rightist(t_philo *info);
 void				*thread_init(void *info_ptr);
+
+int					ft_sleep(useconds_t time, t_philo *info);
 
 #endif // PHILO_H
