@@ -18,20 +18,13 @@
 # include <sys/time.h>
 # include <unistd.h>
 
-typedef struct s_table
-{
-	pthread_t		thread;
-	char			*haveEaten;
-	int				n_of_philos;
-}					t_table;
-
 typedef struct s_state
 {
-	int				i;
-	int				have_eaten;
-	int				n_must_eat;
-	int				n_philos_exist;
-	int				philo_died;
+	short			i;
+	short			have_eaten;
+	short			n_must_eat;
+	short			n_philos_exist;
+	short			philo_died;
 }					t_state;
 
 typedef struct s_philo
@@ -41,7 +34,7 @@ typedef struct s_philo
 	short			max_n;
 
 	struct timeval	*tv;
-	struct timeval	last_supper;
+	long			last_supper;
 	useconds_t		time_to_die;
 	useconds_t		time_to_eat;
 	useconds_t		time_to_sleep;
@@ -54,17 +47,16 @@ typedef struct s_philo
 	short			times_eaten;
 	char			impending_doom;
 	char			game_won;
-
-	t_table			*table;
 }					t_philo;
 
 typedef struct s_info
 {
 	pthread_mutex_t	mutex;
-	int				i;
+	short			i;
 	struct timeval	tv;
-	int				threads;
+	short			threads;
 	int				ac;
+	char			**av;
 }					t_info;
 
 int					ft_atoi(const char *str);
@@ -82,5 +74,8 @@ void				start_simulation_rightist(t_philo *info);
 void				*thread_init(void *info_ptr);
 
 int					ft_sleep(useconds_t time, t_philo *info);
+
+void				check_if_eated(t_philo *info, t_state *state);
+void				kill_philos(t_philo *info, t_state *state);
 
 #endif // PHILO_H

@@ -27,25 +27,40 @@ int	ft_sleep(useconds_t time, t_philo *info)
 {
 	unsigned int	i;
 
-	i = time / 1000;
+	i = time / 5000;
 	while (i > 0)
 	{
-		usleep(1000);
-		i--;
 		pthread_mutex_lock(info->mutex);
 		if (info->impending_doom)
 			return (pthread_mutex_unlock(info->mutex), 1);
 		pthread_mutex_unlock(info->mutex);
+		usleep(5000);
+		i--;
 	}
 	return (0);
 }
+
 int	is_dead(t_philo *info)
 {
-	struct timeval	now;
-	long			diff;
+	long	now;
 
-	gettimeofday(&now, NULL);
-	diff = (now.tv_sec - info->last_supper.tv_sec) * 1000 + (now.tv_usec
-			- info->last_supper.tv_usec) / 1000;
-	return (diff > info->time_to_die);
+	pthread_mutex_lock(info->mutex);
+	now = now_ms(info);
+	pthread_mutex_unlock(info->mutex);
+	return ((now - info->last_supper) > info->time_to_die);
+}
+
+void	kill_philos(t_philo *philos, t_state *state)
+{
+	state->i = philos->max_n;
+	while (state->i > 0)
+	{
+		state->i--;
+		if (state->philo_died == state->i)
+			printf("==%ld==\t%d died\n", now_ms(philos), state->philo_died + 1);
+		philos[state->i].impending_doom = 1;
+		philos[state->i].game_won = 1;
+	}
+	if (state->philo_died == -1)
+		printf("All philos have eated\n");
 }

@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include "philo.h"
-#include <sys/time.h>
 
 void	take_fork(t_philo *info)
 {
@@ -42,8 +41,8 @@ int	eat(t_philo *info)
 	pthread_mutex_lock(info->mutex);
 	if (info->impending_doom)
 		return (pthread_mutex_unlock(info->mutex), 1);
-	gettimeofday(&(info->last_supper), NULL);
 	printf("==%ld==\t%d is eating\n", now_ms(info), info->n);
+	info->last_supper = now_ms(info);
 	info->times_eaten++;
 	pthread_mutex_unlock(info->mutex);
 	if (ft_sleep(info->time_to_eat * 1000, info))
@@ -61,4 +60,22 @@ int	nap(t_philo *info)
 	if (ft_sleep(info->time_to_eat * 1000, info))
 		return (1);
 	return (0);
+}
+
+void	check_if_eated(t_philo *philos, t_state *state)
+{
+	state->have_eaten = 0;
+	state->i = 0;
+	while (state->i < state->n_philos_exist)
+	{
+		pthread_mutex_lock(philos->mutex);
+		if (state->n_must_eat > 0
+			&& (philos[state->i].times_eaten >= state->n_must_eat))
+			state->have_eaten += 1;
+		pthread_mutex_unlock(philos->mutex);
+		if (is_dead(&philos[state->i]))
+			state->philo_died = state->i;
+		state->i++;
+	}
+	usleep(5000);
 }

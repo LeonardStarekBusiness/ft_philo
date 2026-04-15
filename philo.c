@@ -17,56 +17,46 @@ int	quit(int type)
 	if (type == 1)
 	{
 		printf("Usage: ./philo number_of_philosophers ");
-		printf("time_to_die time_to_eat time_to_sleep\n");
+		printf("time_to_die time_to_eat time_to_sleep ");
+		printf("[number_of_times_each_philosopher_must_eat]\n");
 	}
 	else if (type == 2)
-		printf("Args cannot be 0\n");
+	{
+		printf("Args must be positive integers\n");
+	}
 	return (type);
 }
 
-void	*table_activities(void *info_ptr)
+int	input_invalid(t_info *input)
 {
-	t_philo	*info;
+	input->i = 0;
+	if (input->ac != 5 && input->ac != 6)
+		return (quit(1));
+	input->threads = ft_atoi(input->av[1]);
+	if ((input->threads < 1 || ft_atoi(input->av[2]) < 1
+			|| ft_atoi(input->av[3]) < 1 || ft_atoi(input->av[4]) < 1)
+		|| (input->ac == 6 && ft_atoi(input->av[5]) < 1))
+		return (quit(2));
+	return (0);
+}
+
+void	*table_activities(void *philos_ptr)
+{
+	t_philo	*philos;
 	t_state	state;
 
-	info = (t_philo *)info_ptr;
+	philos = (t_philo *)philos_ptr;
 	state.have_eaten = 0;
-	pthread_mutex_lock(info->mutex);
-	state.n_must_eat = info[0].times_must_eat;
-	state.n_philos_exist = info[0].max_n;
-	pthread_mutex_unlock(info->mutex);
-	state.philo_died = 0;
-	while (state.have_eaten != state.n_philos_exist && !state.philo_died)
-	{
-		state.have_eaten = 0;
-		state.i = 0;
-		while (state.i < state.n_philos_exist)
-		{
-			pthread_mutex_lock(info->mutex);
-			if (state.n_must_eat > 0
-				&& (info[state.i].times_eaten >= state.n_must_eat))
-				state.have_eaten += 1;
-			pthread_mutex_unlock(info->mutex);
-			if (is_dead(info+state.i))
-			{
-				state.philo_died = 1;
-			}
-			state.i++;
-		}
-		usleep(5000);
-	}
-	pthread_mutex_lock(info->mutex);
-	while (state.i > 0)
-	{
-		state.i--;
-		if (state.philo_died)
-			printf("==%ld==\t%d died\n", now_ms(info), info[state.i].n);
-		info[state.i].impending_doom = 1;
-		info[state.i].game_won = 1;
-	}
-	if (!state.philo_died)
-		printf("All philos have eated\n");
-	pthread_mutex_unlock(info->mutex);
+	pthread_mutex_lock(philos->mutex);
+	state.n_must_eat = philos[0].times_must_eat;
+	state.n_philos_exist = philos[0].max_n;
+	pthread_mutex_unlock(philos->mutex);
+	state.philo_died = -1;
+	while (state.have_eaten < state.n_philos_exist && (state.philo_died == -1))
+		check_if_eated(philos, &state);
+	pthread_mutex_lock(philos->mutex);
+	kill_philos(philos, &state);
+	pthread_mutex_unlock(philos->mutex);
 	return (NULL);
 }
 
@@ -81,12 +71,18 @@ void	initialise(t_philo *philo, char **av, t_info *info)
 	philo->time_to_die = ft_atoi(av[2]);
 	philo->time_to_eat = ft_atoi(av[3]);
 	philo->time_to_sleep = ft_atoi(av[4]);
-	gettimeofday(&(philo->last_supper), NULL);
+	philo->last_supper = 0;
 	if (info->ac == 6)
 		philo->times_must_eat = ft_atoi(av[5]);
 	else
 		philo->times_must_eat = -1;
 	pthread_mutex_init(&(philo->fork), NULL);
+	gettimeofday(&(info->tv), NULL);
+	if ((info->i) + 1 == info->threads)
+		philo->next_fork = &((philo - (info->i))->fork);
+	else
+		philo->next_fork = &((philo + 1)->fork);
+	info->i++;
 }
 
 int	main(int ac, char **av)
@@ -96,24 +92,16 @@ int	main(int ac, char **av)
 	t_philo		*philos;
 	t_info		info;
 
-	info.i = 0;
 	info.ac = ac;
-	if (ac != 5 && ac != 6)
-		return (quit(1));
-	info.threads = ft_atoi(av[1]);
-	if ((info.threads < 1 || ft_atoi(av[2]) < 1 || ft_atoi(av[3]) < 1
-			|| ft_atoi(av[4]) < 1) || (ac == 6 && ft_atoi(av[5]) < 1))
-		return (quit(2));
+	info.av = av;
+	if (input_invalid(&info))
+		return (42);
 	pthread_mutex_init(&(info.mutex), NULL);
 	threddy = malloc(sizeof(pthread_t) * info.threads);
 	philos = malloc(sizeof(t_philo) * info.threads);
-	gettimeofday(&(info.tv), NULL);
 	pthread_mutex_lock(&(info.mutex));
 	while (info.i < info.threads)
-	{
 		initialise(philos + info.i, av, &info);
-		philos[info.i++].next_fork = &(philos[(info.i + 1) % info.threads].fork);
-	}
 	while (info.i > 0)
 		pthread_create(&(threddy[--info.i]), NULL, &thread_init,
 			&(philos[info.i]));
