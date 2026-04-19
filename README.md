@@ -1,4 +1,4 @@
-_ This project has been created as part of the 42 curriculum by lstarek_
+_This project has been created as part of the 42 curriculum by lstarek_
 
 # PHILOSOPHERS by lstarek
 
