@@ -62,7 +62,7 @@ void	kill_philos(t_philo *philos, t_state *state)
 	{
 		state->i--;
 		if (state->philo_died == state->i)
-			printf("==%ld==\t%d died\n", now_ms(philos), state->philo_died + 1);
+			printf("%ld %d died\n", now_ms(philos), state->philo_died + 1);
 		philos[state->i].impending_doom = 1;
 		philos[state->i].game_won = 1;
 	}

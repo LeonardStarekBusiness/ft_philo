@@ -75,7 +75,7 @@ void	start_simulation_rightist(t_philo *info)
 void	start_simulation_single(t_philo *info)
 {
 	pthread_mutex_unlock(info->mutex);
-	printf("==%ld==\t%d has taken a fork\n", now_ms(info), info->n);
+	printf("%ld %d has taken a fork\n", now_ms(info), info->n);
 	usleep(info->time_to_die);
 	pthread_mutex_unlock(info->mutex);
 }

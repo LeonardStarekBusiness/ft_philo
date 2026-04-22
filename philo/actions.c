@@ -20,7 +20,7 @@ void	take_fork(t_philo *info)
 		pthread_mutex_unlock(info->mutex);
 		return ;
 	}
-	printf("==%ld==\t%d has taken a fork\n", now_ms(info), info->n);
+	printf("%ld %d has taken a fork\n", now_ms(info), info->n);
 	pthread_mutex_unlock(info->mutex);
 }
 
@@ -32,7 +32,7 @@ void	think(t_philo *info)
 		pthread_mutex_unlock(info->mutex);
 		return ;
 	}
-	printf("==%ld==\t%d is thinking\n", now_ms(info), info->n);
+	printf("%ld %d is thinking\n", now_ms(info), info->n);
 	pthread_mutex_unlock(info->mutex);
 }
 
@@ -41,7 +41,7 @@ int	eat(t_philo *info)
 	pthread_mutex_lock(info->mutex);
 	if (info->impending_doom)
 		return (pthread_mutex_unlock(info->mutex), 1);
-	printf("==%ld==\t%d is eating\n", now_ms(info), info->n);
+	printf("%ld %d is eating\n", now_ms(info), info->n);
 	info->last_supper = now_ms(info);
 	info->times_eaten++;
 	pthread_mutex_unlock(info->mutex);
@@ -55,7 +55,7 @@ int	nap(t_philo *info)
 	pthread_mutex_lock(info->mutex);
 	if (info->impending_doom)
 		return (pthread_mutex_unlock(info->mutex), 1);
-	printf("==%ld==\t%d is sleeping\n", now_ms(info), info->n);
+	printf("%ld %d is sleeping\n", now_ms(info), info->n);
 	pthread_mutex_unlock(info->mutex);
 	if (ft_sleep(info->time_to_eat * 1000, info))
 		return (1);
