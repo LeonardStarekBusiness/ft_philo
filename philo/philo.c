@@ -88,7 +88,6 @@ void	initialise(t_philo *philo, char **av, t_info *info)
 int	main(int ac, char **av)
 {
 	pthread_t	*threddy;
-	pthread_t	table;
 	t_philo		*philos;
 	t_info		info;
 
@@ -99,15 +98,15 @@ int	main(int ac, char **av)
 	pthread_mutex_init(&(info.mutex), NULL);
 	threddy = malloc(sizeof(pthread_t) * info.threads);
 	philos = malloc(sizeof(t_philo) * info.threads);
-	pthread_mutex_lock(&(info.mutex));
+	if (!threddy || !philos)
+		return (free(threddy), free(philos), 42);
 	while (info.i < info.threads)
 		initialise(philos + info.i, av, &info);
 	while (info.i > 0)
 		pthread_create(&(threddy[--info.i]), NULL, &thread_init,
 			&(philos[info.i]));
-	pthread_create(&table, NULL, &table_activities, philos);
-	pthread_mutex_unlock(&(info.mutex));
+	table_activities(philos);
 	while (info.i < info.threads)
 		pthread_join(threddy[info.i++], NULL);
-	return (pthread_join(table, NULL), free(philos), free(threddy), 0);
+	return (free(philos), free(threddy), 0);
 }

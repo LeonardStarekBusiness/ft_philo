@@ -74,8 +74,7 @@ void	start_simulation_rightist(t_philo *info)
 
 void	start_simulation_single(t_philo *info)
 {
-	//two unlocks?? check.
-	pthread_mutex_unlock(info->mutex);
+	pthread_mutex_lock(info->mutex);
 	printf("%ld %d has taken a fork\n", now_ms(info), info->n);
 	usleep(info->time_to_die);
 	pthread_mutex_unlock(info->mutex);
