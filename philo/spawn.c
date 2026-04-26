@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   spawn.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lstarek <lstarek@student.42vienna.com>     +#+  +:+       +#+        */
+/*   By: baal <baal@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/29 14:37:25 by lstarek           #+#    #+#             */
-/*   Updated: 2026/03/29 14:37:27 by lstarek          ###   ########.fr       */
+/*   Updated: 2026/04/27 00:47:57 by baal             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,8 +83,21 @@ void	start_simulation_single(t_philo *info)
 void	*thread_init(void *info_ptr)
 {
 	t_philo	*info;
+	char	beningding;
 
 	info = (t_philo *)info_ptr;
+	while (1)
+	{
+		pthread_mutex_lock(info->mutex);
+		beningding = info->started;
+		pthread_mutex_unlock(info->mutex);
+		if (beningding == 0)
+			usleep(100);
+		else if (beningding == -1)
+			return (NULL);
+		else
+			break ;
+	}
 	pthread_mutex_lock(info->mutex);
 	pthread_mutex_unlock(info->mutex);
 	if (info->max_n == 1)

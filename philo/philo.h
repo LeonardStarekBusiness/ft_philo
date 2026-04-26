@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   philo.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lstarek <lstarek@student.42vienna.com>     +#+  +:+       +#+        */
+/*   By: baal <baal@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/29 14:36:53 by lstarek           #+#    #+#             */
-/*   Updated: 2026/03/29 14:36:55 by lstarek          ###   ########.fr       */
+/*   Updated: 2026/04/27 00:36:19 by baal             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,7 @@ typedef struct s_philo
 	char			impending_doom;
 	char			game_won;
 
+	char			started;
 	unsigned short	error;
 }					t_philo;
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   time.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lstarek <lstarek@student.42vienna.com>     +#+  +:+       +#+        */
+/*   By: baal <baal@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/29 14:37:31 by lstarek           #+#    #+#             */
-/*   Updated: 2026/03/29 14:37:33 by lstarek          ###   ########.fr       */
+/*   Updated: 2026/04/27 00:50:56 by baal             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ void	kill_philos(t_philo *philos, t_state *state)
 	while (state->i > 0)
 	{
 		state->i--;
-		if (state->philo_died == state->i)
+		if (state->philo_died == state->i && philos->started == 1)
 			printf("%ld %d died\n", now_ms(philos), state->philo_died + 1);
 		philos[state->i].impending_doom = 1;
 		philos[state->i].game_won = 1;
