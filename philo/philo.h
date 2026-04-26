@@ -47,6 +47,8 @@ typedef struct s_philo
 	short			times_eaten;
 	char			impending_doom;
 	char			game_won;
+
+	unsigned short	error;
 }					t_philo;
 
 typedef struct s_info
