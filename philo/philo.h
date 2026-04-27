@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   philo.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: baal <baal@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: lstarek <lstarek@student.42vienna.com      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/03/29 14:36:53 by lstarek           #+#    #+#             */
-/*   Updated: 2026/04/27 00:36:19 by baal             ###   ########.fr       */
+/*   Created: 2026/04/27 18:36:20 by lstarek           #+#    #+#             */
+/*   Updated: 2026/04/27 18:37:44 by lstarek          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 # include <stdlib.h>
 # include <sys/time.h>
 # include <unistd.h>
+# include <sys/types.h>
 
 typedef struct s_state
 {
@@ -63,6 +64,7 @@ typedef struct s_info
 }					t_info;
 
 int					ft_atoi(const char *str);
+int					input_invalid(t_info *input);
 
 long				now_ms(t_philo *info);
 char				is_dead(t_philo *info);

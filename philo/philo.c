@@ -3,48 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   philo.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: baal <baal@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: lstarek <lstarek@student.42vienna.com      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/03/29 14:37:13 by lstarek           #+#    #+#             */
-/*   Updated: 2026/04/27 00:51:47 by baal             ###   ########.fr       */
+/*   Created: 2026/04/27 18:36:11 by lstarek           #+#    #+#             */
+/*   Updated: 2026/04/27 18:37:06 by lstarek          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-int	quit(int type)
-{
-	if (type == 1)
-	{
-		printf("Usage: ./philo number_of_philosophers ");
-		printf("time_to_die time_to_eat time_to_sleep ");
-		printf("[number_of_times_each_philosopher_must_eat]\n");
-	}
-	else if (type == 2)
-	{
-		printf("Args must be positive integers\n");
-	}
-	return (type);
-}
-
-int	input_invalid(t_info *input)
-{
-	input->i = 0;
-	if (input->ac != 5 && input->ac != 6)
-		return (quit(1));
-	input->threads = ft_atoi(input->av[1]);
-	if ((input->threads < 1 || ft_atoi(input->av[2]) < 1
-			|| ft_atoi(input->av[3]) < 1 || ft_atoi(input->av[4]) < 1)
-		|| (input->ac == 6 && ft_atoi(input->av[5]) < 1))
-		return (quit(2));
-	return (0);
-}
-
 void	*table_activities(void *philos_ptr)
 {
-	t_philo	*philos;
-	t_state	state;
-	unsigned short i;
+	t_philo			*philos;
+	t_state			state;
+	unsigned short	i;
 
 	philos = (t_philo *)philos_ptr;
 	state.have_eaten = 0;
@@ -56,10 +28,9 @@ void	*table_activities(void *philos_ptr)
 	while (i < philos->max_n)
 	{
 		if (!(philos->error))
-			philos[i].started = 1;
+			philos[i++].started = 1;
 		else
-			philos[i].started = -1;
-		i++;
+			philos[i++].started = -1;
 	}
 	pthread_mutex_unlock(philos->mutex);
 	while (state.have_eaten < state.n_philos_exist && (state.philo_died == -1))
@@ -96,6 +67,17 @@ void	initialise(t_philo *philo, char **av, t_info *info)
 	info->i++;
 }
 
+void	handle_error(unsigned short error, t_info *info_ptr)
+{
+	info_ptr->i++;
+	if (error)
+	{
+		printf("Thread creation failed!\n");
+		info_ptr->i++;
+	}
+	return ;
+}
+
 int	main(int ac, char **av)
 {
 	pthread_t	*threddy;
@@ -114,17 +96,11 @@ int	main(int ac, char **av)
 	philos->error = 0;
 	while (info.i < info.threads)
 		initialise(philos + info.i, av, &info);
-	while (info.i > 0 && philos->error == 0)
-	{
-		info.i--;
-		philos->error += pthread_create(&(threddy[info.i]), NULL,
-				&thread_init, &(philos[info.i]));
-	}
-	if (philos->error)
-		info.i++;
+	while (info.i-- > 0 && philos->error == 0)
+		philos->error += pthread_create(&(threddy[info.i]), NULL, &thread_init,
+				&(philos[info.i]));
+	handle_error(philos->error, &info);
 	table_activities(philos);
-	if (philos->error)
-		printf("Thread creation failed!\n");
 	while (info.i < info.threads)
 		pthread_join(threddy[info.i++], NULL);
 	return (free(philos), free(threddy), 0);
