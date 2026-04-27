@@ -12,11 +12,6 @@
 
 #include "philo.h"
 
-static int	is_it_space(char c)
-{
-	return (c == 32 || (c >= 9 && c <= 13));
-}
-
 int	ft_atoi(const char *str)
 {
 	int	i;
@@ -26,7 +21,7 @@ int	ft_atoi(const char *str)
 	i = 0;
 	minus_counter = 0;
 	sum = 0;
-	while (is_it_space(str[i]))
+	while (c == 32 || (c >= 9 && c <= 13))
 		i++;
 	if (str[i] == '-' || str[i] == '+')
 	{
