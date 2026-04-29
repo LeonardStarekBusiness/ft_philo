@@ -65,6 +65,7 @@ typedef struct s_info
 
 int					ft_atoi(const char *str);
 int					input_invalid(t_info *input);
+void				destroy_everything(t_philo *philos);
 
 long				now_ms(t_philo *info);
 char				is_dead(t_philo *info);

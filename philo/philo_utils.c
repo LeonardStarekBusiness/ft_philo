@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "philo.h"
+#include <pthread.h>
 
 int	ft_atoi(const char *str)
 {
@@ -65,4 +66,17 @@ int	input_invalid(t_info *input)
 		|| (input->ac == 6 && ft_atoi(input->av[5]) < 1))
 		return (quit(2));
 	return (0);
+}
+
+void	destroy_everything(t_philo *philos)
+{
+	int	i;
+
+	i = 0;
+	while (i < philos->max_n)
+	{
+		pthread_mutex_destroy(&(philos[i].fork));
+		i++;
+	}
+	pthread_mutex_destroy(philos->mutex);
 }

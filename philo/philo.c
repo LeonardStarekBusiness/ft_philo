@@ -103,5 +103,6 @@ int	main(int ac, char **av)
 	table_activities(philos);
 	while (info.i < info.threads)
 		pthread_join(threddy[info.i++], NULL);
+	destroy_everything(philos);
 	return (free(philos), free(threddy), 0);
 }
