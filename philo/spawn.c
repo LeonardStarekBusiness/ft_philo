@@ -80,6 +80,7 @@ void	start_simulation_single(t_philo *info)
 	usleep(info->time_to_die);
 	pthread_mutex_unlock(&(info->fork));
 	pthread_mutex_unlock(info->mutex);
+	return ;
 }
 
 void	*thread_init(void *info_ptr)

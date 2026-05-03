@@ -1,10 +1,10 @@
 NAME = philo
 
-CFLAGGEN = -Wall -Wextra -Werror -g
+CFLAGGEN = -Wall -Wextra -Werror -pthread
 
 CC = cc
 
-QUELLE_DATEIEN = time.c spawn.c philo_utils.c actions.c philo.c
+QUELLE_DATEIEN = helper_funcs.c time.c spawn.c philo_utils.c actions.c philo.c
 
 OBJEKT_DATEIEN = $(QUELLE_DATEIEN:.c=.o)
 

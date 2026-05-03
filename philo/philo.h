@@ -67,6 +67,10 @@ int					ft_atoi(const char *str);
 int					input_invalid(t_info *input);
 void				destroy_everything(t_philo *philos);
 
+int					ft_atoi(const char *str);
+char				*ft_itoa(int n);
+int					ft_strcmp(const char *s1, const char *s2);
+
 long				now_ms(t_philo *info);
 char				is_dead(t_philo *info);
 
